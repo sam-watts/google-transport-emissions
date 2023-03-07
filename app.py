@@ -260,6 +260,11 @@ else:
 
     agg = df.groupby(["year", "activity_type"]).agg(**aggregators).reset_index()
 
+    agg["percentage_yearly_emissions"] = (
+        (agg["tonnes_co2_eq"] / agg.groupby("year")["tonnes_co2_eq"].transform("sum"))
+        * 100
+    ).map("{:,.2f}%".format)
+
     tabs = st.tabs(
         [
             "Yearly Transport Emissions by Type",
@@ -274,6 +279,7 @@ else:
             x="year",
             y="tonnes_co2_eq",
             color="activity_type",
+            hover_data=["percentage_yearly_emissions"],
         )
         fig.update_layout(yaxis_title="Tonnes CO2eq")
         fig.update_xaxes(type="category")

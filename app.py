@@ -150,7 +150,7 @@ with st.sidebar:
         uploader_disabled = True
 
     files_uploaded = placeholder.file_uploader(
-        "Upload your Google Takeout .zip file:",
+        "Upload your Google Timeline .zip file:",
         type="zip",
         disabled=uploader_disabled,
         accept_multiple_files=True,
@@ -177,9 +177,29 @@ else:
     files = files_uploaded
 
 if not files:
-    st.markdown("Select data in the sidebar to get started!")
+    st.markdown(
+        """
+        :wave: Welcome! This app lets you see the approximate carbon footprint
+            (as CO2eq) of your travel, based on your Google location data.
+            This works best if you have an Android phone, and have had
+            location history enabled for at least a few months (ideally years!)
+
+        :arrow_left::floppy_disk: **Add a data source in the sidebar to get
+            started!**
+        """
+    )
+    st.image("timeline_screenshot.png")
 else:
-    reduction_levels = st.checkbox("Show emissions reduction levels?", value=True)
+    reduction_levels = st.checkbox(
+        "Show emissions reduction levels?",
+        value=True,
+        help=(
+            "These dotted red lines show the required CO2eq emissions / person / year"
+            " up to 2050, to have a 50% chance of limiting global warming to 1.5°C. See"
+            " the 'Global Emissions Reduction Targets to 2050' tab for the numbers and"
+            " logic this is based on."
+        ),
+    )
     raw_data = extract_from_takeout(files)
 
     parsed_data = parse_activities(raw_data)

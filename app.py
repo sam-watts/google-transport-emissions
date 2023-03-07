@@ -136,6 +136,12 @@ def apply_rg_search(lat_series, lon_series):
     return [x["cc"] for x in rg.search(list(zip(lat_series, lon_series)))]
 
 
+st.set_page_config(
+    page_title="Transport CO2 Emissions",
+    page_icon="🌍️",
+    initial_sidebar_state="expanded",
+)
+
 st.title("Google Timeline Carbon Footprint")
 uploader_disabled = False
 

@@ -143,20 +143,7 @@ with st.sidebar:
     st.markdown("## Input Data")
     placeholder = st.empty()
 
-    st.markdown("Or:")
-    use_sample_data = st.checkbox("Use sample data?")
-
-    if use_sample_data:
-        uploader_disabled = True
-
-    files_uploaded = placeholder.file_uploader(
-        "Upload your Google Timeline .zip file:",
-        type="zip",
-        disabled=uploader_disabled,
-        accept_multiple_files=True,
-    )
-
-    with st.expander(":bulb: How do I get my Google location data?"):
+    with st.expander(":bulb: How do I get my Google Timeline data?"):
         st.markdown(
             """
             1. Go to [takeout.google.com](https://takeout.google.com/) - make
@@ -170,6 +157,20 @@ with st.sidebar:
             7. Upload your zip file above
             """
         )
+
+    st.markdown("Or:")
+    use_sample_data = st.checkbox("Use sample data?")
+
+    if use_sample_data:
+        uploader_disabled = True
+
+    files_uploaded = placeholder.file_uploader(
+        "Upload your Google Timeline .zip file:",
+        type="zip",
+        disabled=uploader_disabled,
+        accept_multiple_files=True,
+    )
+
 
 if use_sample_data:
     files = get_default_data()

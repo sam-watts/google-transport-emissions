@@ -187,6 +187,11 @@ if not files:
 
         :arrow_left::floppy_disk: **Add a data source in the sidebar to get
             started!**
+
+        If you'd like to verify yourself that this app is not doing anything
+        sketchy with your data (or if you're just curious), you can check out
+        the source code on
+        [GitHub](https://github.com/sam-watts/google_transport_emissions)
         """
     )
     st.image("timeline_screenshot.png")

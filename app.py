@@ -297,6 +297,10 @@ else:
     )
 
     with tabs[0]:
+        # TODO - what is the takehome message here? What should an individual
+        # seeing this do?
+
+        # TODO - add link to blog post when published
 
         def clean_columns(x):
             return (

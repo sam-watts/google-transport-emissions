@@ -105,6 +105,9 @@ def parse_activities(data):
     return activities
 
 
+# TODO - use confidence scores in some way:
+# weighting of emissions?
+# ignore low confidence activities completely?
 def calculate_g_co2_eq(activity_type: str, distance_meters: float):
     # units: g CO2eq / person / km
     factors = {
@@ -119,13 +122,14 @@ def calculate_g_co2_eq(activity_type: str, distance_meters: float):
         "IN_TRAM": 23.46,  # train (electric)
     }
 
-    factor = factors.get(
-        activity_type,
-        # fallback eg. for `UNKNOWN_ACTIVITY_TYPE``
-        # take an average of all the factors
-        # some other edge cases like `SKIING`` also fall into this
-        np.mean(list(factors.values())),
-    )
+    if activity_type in factors:
+        factor = factors[activity_type]
+    elif factor == "UNKNOWN_ACTIVITY_TYPE":
+        # when google can't figure out what you're doing, use the mean
+        factor = np.mean(list(factors.values()))
+    else:
+        # ignore all other activity types
+        factor = np.nan
 
     return distance_meters / 1000 * factor
 

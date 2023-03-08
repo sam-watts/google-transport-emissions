@@ -268,6 +268,7 @@ else:
         / 1_000_000
     )
 
+    df = df.dropna(subset=["tonnes_co2_eq"])
     df["travel_annotation"] = df.apply(
         lambda x: get_travel_annotation(x["start_country"], x["end_country"]), axis=1
     )
@@ -407,7 +408,7 @@ else:
 
         st.plotly_chart(fig)
 
-        with st.expander(":scientist: Sources"):
+        with st.expander(":test_tube: Sources"):
             st.markdown(
                 """
                 ### Transport Emissions Factors
@@ -436,21 +437,21 @@ else:
                 [per-capita-co2-transport.csv - up to 2019](
                     https://ourworldindata.org/grapher/per-capita-co2-transport):
 
-                "... the average per capita emissions of carbon dioxide from
-                transport each year. This includes road, train, bus and
-                domestic air travel but does not include international aviation
-                and shipping."
+                > "... the average per capita emissions of carbon dioxide from
+                > transport each year. This includes road, train, bus and
+                > domestic air travel but does not include international aviation
+                > and shipping."
 
                 Data from 2019 is used to fill in missing data for 2020 onwards.
 
                 [per-capita-co2-international-flights-adjusted.csv - 2018 only](
                     https://ourworldindata.org/grapher/per-capita-co2-international-flights-adjusted):
 
-                "International aviation emissions are allocated to the country of
-                departure, then adjusted for tourism by multiplying this figure
-                by the ratio of inbound-to-outbound travelers. This attempts to
-                distinguish between locals traveling abroad and foreign visitors
-                traveling to that country on the same flight."
+                > "International aviation emissions are allocated to the country of
+                > departure, then adjusted for tourism by multiplying this figure
+                > by the ratio of inbound-to-outbound travelers. This attempts to
+                > distinguish between locals traveling abroad and foreign visitors
+                > traveling to that country on the same flight."
 
                 As the data only covers one year, it is used to fill in all other years.
 
@@ -534,6 +535,13 @@ else:
 
         st.plotly_chart(fig)
 
+        with st.expander(":test_tube: Sources"):
+            st.markdown(
+                """
+
+                """
+            )
+
     global_emissions_2022 = 40.6e9  # tonnes CO2eq
     years_to_2050 = np.linspace(2050, 2023, 28)
     emissions_per_year_zero_2050 = np.linspace(0, global_emissions_2022, 28)
@@ -542,22 +550,66 @@ else:
     emissions_reductions = pd.DataFrame(
         dict(
             year=years_to_2050.astype(str),
-            emissions_per_year_zero_2050=emissions_per_year_zero_2050,
+            emissions_per_year_tonnes_co2eq=emissions_per_year_zero_2050,
             global_population=global_population,
-            emissions_per_year_per_person_zero_2050=emissions_per_year_zero_2050
+            emissions_per_year_per_person_tonnes_co2eq=emissions_per_year_zero_2050
             / global_population,
         )
     ).loc[::-1]
 
+    emissions_reductions = emissions_reductions.melt(
+        id_vars="year",
+        value_vars=[
+            "emissions_per_year_tonnes_co2eq",
+            "emissions_per_year_per_person_tonnes_co2eq",
+            "global_population",
+        ],
+    )
+
     with tabs[2]:
+        st.markdown(
+            """
+            According to the Global Carbon Project's [2022 estimates](
+            https://globalcarbonbudget.org/wp-content/uploads/Key-messages.pdf),
+            global emissions in 2022 reached 40.6 GtCO2.
+
+            > "Reaching zero CO2 emissions by 2050 entails a total
+            > anthropogenic CO2 emissions linear
+            > decrease by about 1.4 GtCO2 each year, comparable to the observed
+            > fall in 2020 emissions
+            > resulting from COVID-19 measures, highlighting the scale of the
+            > action needed. This would
+            > result in additional emissions of 560 GtCO 2 from year 2023,
+            > leading to a 50% likelihood to
+            > limit warming around 1.6°C"
+
+            The graphs below show the emissions per year and per person required
+            to reach zero CO2 emissions by 2050. Population is linearly
+            projected to 9.8 billion in 2050.
+            """
+        )
+
         st.plotly_chart(
             px.line(
                 emissions_reductions,
                 x="year",
-                y=[
-                    "emissions_per_year_zero_2050",
-                    "emissions_per_year_per_person_zero_2050",
-                    "global_population",
-                ],
+                y="value",
+                facet_row="variable",
+                facet_row_spacing=0.10,
+            )
+            .update_layout(margin=dict(r=250))
+            .update_yaxes(matches=None)
+            .for_each_annotation(
+                lambda a: a.update(
+                    text=a.text.split("=")[-1].replace("_", " ").title(), textangle=0
+                )
             )
         )
+
+st.info(
+    (
+        "If you have any questions or feedback, please create an issue"
+        " [here](https://github.com/sam-watts/google-transport-emissions/issues/new)"
+    ),
+    icon="ℹ️",
+)

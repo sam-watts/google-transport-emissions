@@ -124,7 +124,7 @@ def calculate_g_co2_eq(activity_type: str, distance_meters: float):
 
     if activity_type in factors:
         factor = factors[activity_type]
-    elif factor == "UNKNOWN_ACTIVITY_TYPE":
+    elif activity_type == "UNKNOWN_ACTIVITY_TYPE":
         # when google can't figure out what you're doing, use the mean
         factor = np.mean(list(factors.values()))
     else:

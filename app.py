@@ -195,13 +195,32 @@ else:
 if not files:
     st.markdown(
         """
-        :wave: Welcome! This app lets you see the approximate carbon footprint
-            (as CO2eq) of your travel, based on your Google location data.
+        👋 Welcome! This app lets you see the approximate carbon footprint
+            in tonnes of CO2 equivalent (CO2eq) of your travel, based on your
+            Google location data.
             This works best if you have an Android phone, and have had
-            location history enabled for at least a few months (ideally years!)
+            location history enabled for at least a few months.
 
         :arrow_left::floppy_disk: **Add a data source in the sidebar to get
             started!**
+
+        Put simply - if you fly a lot, this may be far outweighing
+        other efforts you might be
+        making to reduce your impact on the climate:
+        """
+    )
+    with st.columns([0.15, 0.7, 0.15])[1]:
+        st.image("flight_free_uk.jpg", caption="Source: https://flightfree.co.uk/")
+    st.markdown(
+        """
+        You can find my blog post discussing wider issues around aviation [here](
+            https://sam-watts.github.io/blog/posts/google-timeline-emissions/
+        )
+
+        This is not intended to be a precise measurement of your emissions, but
+        an indication of the order of magnitude compared to the average person
+        in different countries. Google is not always able to
+        accurately determine the mode of transport you used.
 
         If you'd like to verify yourself that this app is not doing anything
         sketchy with your data (or if you're just curious), you can check out
@@ -209,14 +228,14 @@ if not files:
         [GitHub](https://github.com/sam-watts/google_transport_emissions)
         """
     )
-    st.image("timeline_screenshot.png")
 else:
     reduction_levels = st.checkbox(
         "Show 1.5°C emissions reduction targets?",
         value=False,
         help=(
             "These dotted red lines show the required CO2eq emissions / person / year"
-            " up to 2050, to have a 50% chance of limiting global warming to 1.5°C. See"
+            " up to 2050, to have a 50% chance of limiting global warming to 1.5°C."
+            " This includes all emissions, not just transport. See"
             " the 'Global Emissions Reduction Targets to 2050' tab for the numbers and"
             " logic this is based on."
         ),
@@ -290,17 +309,13 @@ else:
 
     tabs = st.tabs(
         [
-            "Yearly Transport Emissions by Type",
+            "Yearly Transport Emissions by Mode of Travel",
             "Yearly Flight Emissions",
             "Global Emissions Reduction Targets to 2050",
         ]
     )
 
     with tabs[0]:
-        # TODO - what is the takehome message here? What should an individual
-        # seeing this do?
-
-        # TODO - add link to blog post when published
 
         def clean_columns(x):
             return (
@@ -378,8 +393,9 @@ else:
                 "number_of_activities",
                 "total_distance_km",
             ],
+            labels={"tonnes_co2_eq": "Tonnes CO2eq", "activity_type": "Mode of Travel"},
         )
-        fig.update_layout(yaxis_title="Tonnes CO2eq")
+        # fig.update_layout(yaxis_title="Tonnes CO2eq")
         fig.update_xaxes(type="category")
         if reduction_levels:
             fig.add_hline(
@@ -434,8 +450,8 @@ else:
 
                 Drawbacks:
                 * Doesn't account for non-CO2 greenhouse gas emissions
-                * Doesn't account shipping emissions directly - an global
-                adjustment factor is made
+                * Doesn't accurately account for shipping emissions - a global
+                adjustment factor is used due to lack of data
                 * Data age - see indiviual points below
 
                 [per-capita-co2-transport.csv - up to 2019](
@@ -459,7 +475,8 @@ else:
 
                 As the data only covers one year, it is used to fill in all other years.
 
-                [Global transport totals](https://ourworldindata.org/transport)
+                [Global transport totals](
+                    https://ourworldindata.org/transport#co2-emissions-by-mode-of-transport)
 
                 This data is used to correct for the fact that the above data
                 does not account for shipping. A global adjustment factor of
@@ -469,8 +486,29 @@ else:
             )
 
     with tabs[1]:
+        flight_emissions_by_country = pd.read_csv(
+            "data/per-capita-co2-aviation-adjusted.csv"
+        )
+        flight_emissions_by_country.columns = clean_columns(
+            flight_emissions_by_country.columns
+        )
+
+        flight_emissions_by_country = flight_emissions_by_country.rename(
+            columns={"per_capita_aviation_co2_adjusted": "tonnes_co2_eq"}
+        )
+
+        comp_countries_flights = st.multiselect(
+            (
+                "Select countries to compare for an average persons yearly flight"
+                " (domestic and international) CO2 emissions:"
+            ),
+            flight_emissions_by_country["entity"].unique(),
+        )
+
+        user_flights_only = df[df["activity_type"] == "FLYING"]
+
         fig = px.bar(
-            df[df["activity_type"] == "FLYING"],
+            user_flights_only,
             x="year",
             y="tonnes_co2_eq",
             hover_data=[
@@ -533,8 +571,25 @@ else:
             fig.add_hline(
                 y=1.64,
                 line_dash="dash",
-                annotation_text="1.64 tonens CO2eq / person / year by 2040",
+                annotation_text="1.64 tonnes CO2eq / person / year by 2040",
                 line_color="red",
+            )
+
+        for country in comp_countries_flights:
+            fig.add_trace(
+                go.Scatter(
+                    x=user_flights_only["year"].unique(),
+                    y=[
+                        flight_emissions_by_country[
+                            flight_emissions_by_country["entity"] == country
+                        ]["tonnes_co2_eq"].values[0]
+                        / 1000
+                    ]
+                    * user_flights_only["year"].unique().shape[0],
+                    mode="lines",
+                    name=f"{country} per capita aviation emissions",
+                    line=dict(dash="dash"),
+                )
             )
 
         st.plotly_chart(fig)
@@ -542,7 +597,9 @@ else:
         with st.expander(":test_tube: Sources"):
             st.markdown(
                 """
-
+                [per-capita-co2-avaiation-adjusted.csv - 2018 only](
+                    https://ourworldindata.org/grapher/per-capita-co2-aviation-adjusted
+                )
                 """
             )
 

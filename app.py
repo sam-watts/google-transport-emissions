@@ -196,8 +196,7 @@ if not files:
     st.markdown(
         """
         👋 Welcome! This app lets you see the approximate carbon footprint
-            in tonnes of CO2 equivalent (CO2eq) of your travel, based on your
-            Google location data.
+            of your travel, based on your Google location data.
             This works best if you have an Android phone, and have had
             location history enabled for at least a few months.
 
@@ -377,8 +376,8 @@ else:
         ]
         comp_countries = st.multiselect(
             (
-                "Select countries to compare for an average persons yearly transport"
-                " CO2 emissions:"
+                "Select a country to compare your results to their yearly per capita"
+                " transport emissions across all modes:"
             ),
             emissions_by_country["entity"].unique(),
         )
@@ -499,8 +498,8 @@ else:
 
         comp_countries_flights = st.multiselect(
             (
-                "Select countries to compare for an average persons yearly flight"
-                " (domestic and international) CO2 emissions:"
+                "Select a country to compare your results to their yearly per capita"
+                " transport emissions from flying:"
             ),
             flight_emissions_by_country["entity"].unique(),
         )

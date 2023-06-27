@@ -259,8 +259,8 @@ else:
     df["end_location_latitude"] = df["endLocation.latitudeE7"] / 10_000_000
     df["end_location_longitude"] = df["endLocation.longitudeE7"] / 10_000_000
 
-    df["start_timestamp"] = pd.to_datetime(df["start_timestamp"])
-    df["end_timestamp"] = pd.to_datetime(df["end_timestamp"])
+    df["start_timestamp"] = pd.to_datetime(df["start_timestamp"], format="ISO8601")
+    df["end_timestamp"] = pd.to_datetime(df["end_timestamp"], format="ISO8601")
     df["start_date"] = df["start_timestamp"].dt.date
     df["end_date"] = df["end_timestamp"].dt.date
     df["duration_hours"] = round(

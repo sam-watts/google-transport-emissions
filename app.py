@@ -44,7 +44,7 @@ def get_travel_annotation(from_cc, to_cc):
     return get_flag_emoji(from_cc) + " ➡ " + get_flag_emoji(to_cc)
 
 
-def extract_from_takeout(files: list[io.BytesIO], start_date: date, end_date: date):
+def extract_from_takeout(files: list[io.BytesIO], start_date: date, end_date: date) -> list[dict] | None:
     data = []
     for file in files:
         with zipfile.ZipFile(file) as myzip:
@@ -61,6 +61,10 @@ def extract_from_takeout(files: list[io.BytesIO], start_date: date, end_date: da
                     if start_date <= date(year, month, 1) <= end_date:
                         with myzip.open(name) as f:
                             data.append(json.load(f))
+
+    if len(data) == 0:
+        print("Couldn't load any records from takeout data")
+        return None
 
     print(f"Loaded {len(data)} months of location data")
 
@@ -240,6 +244,10 @@ else:
         ),
     )
     raw_data = extract_from_takeout(files, start_date, end_date)
+
+    if raw_data is None:
+        st.warning("Error parsing data from your uploaded file - are you sure you exported your Timeline data correctly?")
+        st.stop()
 
     parsed_data = parse_activities(raw_data)
     df = pd.DataFrame(parsed_data)
